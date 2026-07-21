@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="section">
+    <div class="section-container">
+        <nav aria-label="breadcrumb" style="margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--gray-500);">
+            <a href="{{ url_for('seller.dashboard') }}">Dashboard</a> &raquo;
+            <a href="{{ url_for('seller.store_products', store_id=store.id) }}">{{ store.name }}</a> &raquo;
+            <span>Add Product</span>
+        </nav>
+        <div class="form-container" style="max-width: 700px;">
+            <h2 class="form-title"><i class="fas fa-plus-circle"></i> Add Product to {{ store.name }}</h2>
+            <form method="POST" action="" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                    {{ form.name.label }}
+                    {{ form.name(class="form-control" + (" error" if form.name.errors else ""), placeholder="Product name") }}
+                    {% if form.name.errors %}
+                        {% for error in form.name.errors %}
+                        <span class="form-error">{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.description.label }}
+                    {{ form.description(class="form-control", rows=5, placeholder="Detailed product description") }}
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form.price.label }}
+                        {{ form.price(class="form-control" + (" error" if form.price.errors else ""), placeholder="0.00") }}
+                        {% if form.price.errors %}
+                            {% for error in form.price.errors %}
+                            <span class="form-error">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        {{ form.compare_price.label }}
+                        {{ form.compare_price(class="form-control", placeholder="0.00") }}
+                        <span class="form-text">Original/comparison price</span>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form.quantity.label }}
+                        {{ form.quantity(class="form-control" + (" error" if form.quantity.errors else ""), placeholder="0") }}
+                        {% if form.quantity.errors %}
+                            {% for error in form.quantity.errors %}
+                            <span class="form-error">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        {{ form.sku.label }}
+                        {{ form.sku(class="form-control", placeholder="SKU-001") }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    {{ form.category.label }}
+                    {{ form.category(class="form-control") }}
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form.image.label }}
+                        {{ form.image(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.image2.label }}
+                        {{ form.image2(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.image3.label }}
+                        {{ form.image3(class="form-control") }}
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-checkbox">
+                            {{ form.is_featured() }} {{ form.is_featured.label }}
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-checkbox">
+                            {{ form.is_active() }} {{ form.is_active.label }}
+                        </label>
+                    </div>
+                </div>
+                {{ form.submit(class="btn btn-primary btn-block btn-lg") }}
+                <a href="{{ url_for('seller.store_products', store_id=store.id) }}" class="btn btn-secondary btn-block mt-1">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

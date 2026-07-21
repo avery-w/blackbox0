@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="cart-page">
+    <h1 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 2rem;"><i class="fas fa-credit-card"></i> Checkout</h1>
+
+    <div class="cart-layout">
+        <div>
+            <div style="background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow); padding: 2rem;">
+                <h3 style="margin-bottom: 1.5rem;">Shipping Information</h3>
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    <div class="form-group">
+                        {{ form.shipping_address.label }}
+                        {{ form.shipping_address(class="form-control" + (" error" if form.shipping_address.errors else ""), rows=3, placeholder="Enter your full shipping address") }}
+                        {% if form.shipping_address.errors %}
+                            {% for error in form.shipping_address.errors %}
+                            <span class="form-error">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            {{ form.phone.label }}
+                            {{ form.phone(class="form-control" + (" error" if form.phone.errors else ""), placeholder="Phone number for delivery") }}
+                            {% if form.phone.errors %}
+                                {% for error in form.phone.errors %}
+                                <span class="form-error">{{ error }}</span>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            {{ form.payment_method.label }}
+                            {{ form.payment_method(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        {{ form.notes.label }}
+                        {{ form.notes(class="form-control", rows=3, placeholder="Any special instructions?") }}
+                    </div>
+                    {{ form.submit(class="btn btn-primary btn-lg btn-block mt-3") }}
+                </form>
+            </div>
+        </div>
+
+        <div>
+            <div class="order-summary">
+                <h3>Order Summary</h3>
+                {% for item in cart_items %}
+                <div class="order-summary-item">
+                    <div class="order-summary-img">
+                        <img src="{{ url_for('static', filename=item.product.image) if item.product.image else url_for('static', filename='uploads/products/default_product.png') }}" alt="{{ item.product.name }}">
+                    </div>
+                    <div class="order-summary-info">
+                        <h4>{{ item.product.name }}</h4>
+                        <p>Qty: {{ item.quantity }} &times; ${{ "%.2f"|format(item.product.price) }}</p>
+                        <p style="font-weight: 600; color: var(--gray-800);">${{ "%.2f"|format(item.subtotal) }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <div style="border-top: 2px solid var(--gray-200); margin-top: 1rem; padding-top: 1rem;">
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span>${{ "%.2f"|format(subtotal) }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Shipping</span>
+                        <span>{% if shipping_cost == 0 %}Free{% else %}${{ "%.2f"|format(shipping_cost) }}{% endif %}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Tax</span>
+                        <span>${{ "%.2f"|format(tax) }}</span>
+                    </div>
+                    <div class="summary-row summary-total">
+                        <span>Total</span>
+                        <span>${{ "%.2f"|format(total) }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

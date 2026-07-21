@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="section">
+    <div class="section-container">
+        <h1 class="section-title"><i class="fas fa-store"></i> Manage Stores</h1>
+        <p class="section-subtitle" style="margin-bottom: 2rem;">View and manage all seller stores</p>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Owner</th>
+                        <th>Products</th>
+                        <th>Active</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for store in stores.items %}
+                    <tr>
+                        <td>{{ store.id }}</td>
+                        <td style="font-weight: 600;">{{ store.name }}</td>
+                        <td>{{ store.owner.username }}</td>
+                        <td>{{ store.total_products }}</td>
+                        <td>
+                            <span class="status-badge status-{{ 'delivered' if store.is_active else 'cancelled' }}">
+                                {{ 'Active' if store.is_active else 'Inactive' }}
+                            </span>
+                        </td>
+                        <td>{{ store.created_at.strftime('%b %d, %Y') }}</td>
+                        <td>
+                            <form action="{{ url_for('admin.toggle_store', store_id=store.id) }}" method="POST">
+                                <button type="submit" class="btn btn-sm btn-{{ 'danger' if store.is_active else 'success' }}">
+                                    {{ 'Deactivate' if store.is_active else 'Activate' }}
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if stores.pages > 1 %}
+        <div class="pagination">
+            {% if stores.has_prev %}
+            <a href="{{ url_for('admin.stores', page=stores.prev_num) }}" class="page-link"><i class="fas fa-chevron-left"></i></a>
+            {% endif %}
+            {% for page_num in stores.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    <a href="{{ url_for('admin.stores', page=page_num) }}" class="page-link {% if page_num == stores.page %}active{% endif %}">{{ page_num }}</a>
+                {% endif %}
+            {% endfor %}
+            {% if stores.has_next %}
+            <a href="{{ url_for('admin.stores', page=stores.next_num) }}" class="page-link"><i class="fas fa-chevron-right"></i></a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="section">
+    <div class="section-container">
+        <h1 class="section-title"><i class="fas fa-users"></i> Manage Users</h1>
+        <p class="section-subtitle" style="margin-bottom: 2rem;">View and manage all registered users</p>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Name</th>
+                        <th>Seller</th>
+                        <th>Admin</th>
+                        <th>Joined</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users.items %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td style="font-weight: 600;">{{ user.username }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.full_name or '-' }}</td>
+                        <td>
+                            <span class="status-badge status-{{ 'delivered' if user.is_seller else 'cancelled' }}">
+                                {{ 'Yes' if user.is_seller else 'No' }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge status-{{ 'processing' if user.is_admin else 'cancelled' }}">
+                                {{ 'Yes' if user.is_admin else 'No' }}
+                            </span>
+                        </td>
+                        <td>{{ user.created_at.strftime('%b %d, %Y') }}</td>
+                        <td>
+                            <div style="display: flex; gap: 0.35rem;">
+                                <form action="{{ url_for('admin.toggle_seller', user_id=user.id) }}" method="POST">
+                                    <button type="submit" class="btn btn-sm btn-secondary">{{ 'Remove Seller' if user.is_seller else 'Make Seller' }}</button>
+                                </form>
+                                <form action="{{ url_for('admin.toggle_admin', user_id=user.id) }}" method="POST">
+                                    <button type="submit" class="btn btn-sm btn-{{ 'danger' if user.is_admin else 'primary' }}">{{ 'Revoke Admin' if user.is_admin else 'Make Admin' }}</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if users.pages > 1 %}
+        <div class="pagination">
+            {% if users.has_prev %}
+            <a href="{{ url_for('admin.users', page=users.prev_num) }}" class="page-link"><i class="fas fa-chevron-left"></i></a>
+            {% endif %}
+            {% for page_num in users.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    <a href="{{ url_for('admin.users', page=page_num) }}" class="page-link {% if page_num == users.page %}active{% endif %}">{{ page_num }}</a>
+                {% endif %}
+            {% endfor %}
+            {% if users.has_next %}
+            <a href="{{ url_for('admin.users', page=users.next_num) }}" class="page-link"><i class="fas fa-chevron-right"></i></a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

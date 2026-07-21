@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="product-detail">
+    <nav aria-label="breadcrumb" style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--gray-500);">
+        <a href="{{ url_for('main.home') }}">Home</a> &raquo;
+        <a href="{{ url_for('products.browse') }}">Products</a> &raquo;
+        {% if product.category %}
+        <a href="{{ url_for('products.browse', category=product.category) }}">{{ product.category|capitalize }}</a> &raquo;
+        {% endif %}
+        <span style="color: var(--gray-700);">{{ product.name }}</span>
+    </nav>
+
+    <div class="product-detail-layout">
+        <!-- Gallery -->
+        <div class="product-gallery">
+            <div class="product-main-image">
+                {% if product.discount_percentage > 0 %}
+                <span class="product-badge badge-sale" style="position: absolute; z-index: 10; top: 1rem; left: 1rem; font-size: 1rem; padding: 0.5rem 1rem;">-{{ product.discount_percentage }}%</span>
+                {% endif %}
+                <img id="mainProductImage" src="{{ url_for('static', filename=product.image) if product.image else url_for('static', filename='uploads/products/default_product.png') }}" alt="{{ product.name }}">
+            </div>
+            <div class="product-thumbnails">
+                <div class="product-thumb active" onclick="changeMainImage('{{ url_for('static', filename=product.image) if product.image else url_for('static', filename='uploads/products/default_product.png') }}')">
+                    <img src="{{ url_for('static', filename=product.image) if product.image else url_for('static', filename='uploads/products/default_product.png') }}" alt="">
+                </div>
+                {% if product.image2 %}
+                <div class="product-thumb" onclick="changeMainImage('{{ url_for('static', filename=product.image2) }}')">
+                    <img src="{{ url_for('static', filename=product.image2) }}" alt="">
+                </div>
+                {% endif %}
+                {% if product.image3 %}
+                <div class="product-thumb" onclick="changeMainImage('{{ url_for('static', filename=product.image3) }}')">
+                    <img src="{{ url_for('static', filename=product.image3) }}" alt="">
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="product-info-section">
+            <h1>{{ product.name }}</h1>
+
+            <div class="product-meta">
+                <span><i class="fas fa-store"></i> <a href="#">{{ product.store.name }}</a></span>
+                <span><i class="fas fa-tag"></i> {{ product.category|capitalize if product.category else 'Uncategorized' }}</span>
+                {% if product.sku %}
+                <span><i class="fas fa-barcode"></i> SKU: {{ product.sku }}</span>
+                {% endif %}
+            </div>
+
+            <div class="product-rating" style="margin-bottom: 1rem; font-size: 1.1rem;">
+                <div class="stars">
+                    {% for i in range(5) %}
+                        {% if i < avg_rating|round(0, 'floor')|int %}
+                        <i class="fas fa-star"></i>
+                        {% elif i < avg_rating %}
+                        <i class="fas fa-star-half-alt"></i>
+                        {% else %}
+                        <i class="far fa-star empty"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <span class="rating-count" style="margin-left: 0.5rem;">{{ avg_rating|round(1) }} ({{ product.reviews|length }} reviews)</span>
+            </div>
+
+            <div class="product-pricing">
+                <span class="current-price">${{ "%.2f"|format(product.price) }}</span>
+                {% if product.compare_price %}
+                <span class="compare-price" style="font-size: 1.25rem;">${{ "%.2f"|format(product.compare_price) }}</span>
+                <span class="discount-badge" style="font-size: 0.85rem; padding: 0.3rem 0.6rem;">Save {{ product.discount_percentage }}%</span>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                {% if product.in_stock %}
+                <span class="status-badge status-delivered"><i class="fas fa-check-circle"></i> In Stock ({{ product.quantity }} available)</span>
+                {% else %}
+                <span class="status-badge status-cancelled"><i class="fas fa-times-circle"></i> Out of Stock</span>
+                {% endif %}
+            </div>
+
+            <div class="product-description">
+                <h3>Description</h3>
+                <p>{{ product.description }}</p>
+            </div>
+
+            {% if product.in_stock %}
+            <form action="{{ url_for('cart.add_to_cart', product_id=product.id) }}" method="POST">
+                <div class="product-actions-detail">
+                    <div class="qty-selector">
+                        <label for="quantity">Quantity:</label>
+                        <input type="number" name="quantity" id="quantity" value="1" min="1" max="{{ product.quantity }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg btn-add-cart"><i class="fas fa-cart-plus"></i> Add to Cart</button>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="reviews-section">
+        <div class="reviews-header">
+            <div>
+                <h2 style="font-size: 1.5rem; font-weight: 700;">Customer Reviews</h2>
+                <p style="color: var(--gray-500);">{{ product.reviews|length }} reviews</p>
+            </div>
+            {% if current_user.is_authenticated %}
+            <button class="btn btn-outline" onclick="document.getElementById('reviewForm').style.display = document.getElementById('reviewForm').style.display === 'none' ? 'block' : 'none'">
+                <i class="fas fa-pen"></i> Write a Review
+            </button>
+            {% endif %}
+        </div>
+
+        {% if product.reviews %}
+        <div class="rating-summary" style="margin-bottom: 2rem; padding: 1.5rem; background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow);">
+            <div style="text-align: center;">
+                <div class="rating-average">{{ avg_rating|round(1) }}</div>
+                <div class="rating-stars-big">
+                    {% for i in range(5) %}
+                        {% if i < avg_rating|round(0, 'floor')|int %}
+                        <i class="fas fa-star"></i>
+                        {% elif i < avg_rating %}
+                        <i class="fas fa-star-half-alt"></i>
+                        {% else %}
+                        <i class="far fa-star" style="color: var(--gray-300);"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <div style="font-size: 0.85rem; color: var(--gray-500);">{{ product.reviews|length }} reviews</div>
+            </div>
+            <div style="flex: 1; max-width: 300px;">
+                {% for i in range(5, 0, -1) %}
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                    <span style="font-size: 0.85rem; min-width: 30px;">{{ i }}★</span>
+                    <div style="flex: 1; height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden;">
+                        <div style="height: 100%; width: {% if product.reviews|length > 0 %}{{ (rating_counts[i] / product.reviews|length * 100)|int }}{% else %}0{% endif %}%; background: var(--accent); border-radius: 4px;"></div>
+                    </div>
+                    <span style="font-size: 0.8rem; color: var(--gray-500); min-width: 20px;">{{ rating_counts[i] }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Review Form -->
+        {% if current_user.is_authenticated %}
+        <div id="reviewForm" style="display: none; margin-bottom: 2rem; padding: 1.5rem; background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow);">
+            <h3 style="margin-bottom: 1rem;">Write Your Review</h3>
+            <form method="POST" action="{{ url_for('products.add_review', product_id=product.id) }}">
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                    {{ form.rating.label }}
+                    {{ form.rating(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.comment.label }}
+                    {{ form.comment(class="form-control", rows=4, placeholder="Share your thoughts about this product...") }}
+                </div>
+                {{ form.submit(class="btn btn-primary") }}
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- Review List -->
+        {% if product.reviews %}
+            {% for review in product.reviews %}
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-author"><i class="fas fa-user-circle"></i> {{ review.author.username }}</div>
+                    <div class="review-date">{{ review.created_at.strftime('%B %d, %Y') }}</div>
+                </div>
+                <div class="review-rating">
+                    {% for i in range(review.rating) %}
+                    <i class="fas fa-star"></i>
+                    {% endfor %}
+                    {% for i in range(5 - review.rating) %}
+                    <i class="far fa-star"></i>
+                    {% endfor %}
+                </div>
+                {% if review.comment %}
+                <p class="review-comment">{{ review.comment }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-comment-dots"></i>
+            <h3>No Reviews Yet</h3>
+            <p>Be the first to review this product!</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Related Products -->
+    {% if related %}
+    <div style="margin-top: 3rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Related Products</h2>
+        <div class="product-grid">
+            {% for rel in related %}
+            <div class="product-card">
+                <div class="product-image">
+                    <a href="{{ url_for('products.detail', product_id=rel.id) }}">
+                        <img src="{{ url_for('static', filename=rel.image) if rel.image else url_for('static', filename='uploads/products/default_product.png') }}" alt="{{ rel.name }}">
+                    </a>
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title"><a href="{{ url_for('products.detail', product_id=rel.id) }}">{{ rel.name }}</a></h3>
+                    <div class="product-price">
+                        <span class="current-price">${{ "%.2f"|format(rel.price) }}</span>
+                    </div>
+                    <form action="{{ url_for('cart.add_to_cart', product_id=rel.id) }}" method="POST">
+                        <button type="submit" class="btn btn-primary btn-sm btn-block"><i class="fas fa-cart-plus"></i> Add to Cart</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

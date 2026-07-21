@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="section">
+    <div class="section-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 class="section-title"><i class="fas fa-store-alt"></i> Seller Dashboard</h1>
+                <p class="section-subtitle">Manage your stores, products, and sales</p>
+            </div>
+            <a href="{{ url_for('seller.create_store') }}" class="btn btn-primary btn-lg"><i class="fas fa-plus"></i> Create New Store</a>
+        </div>
+
+        <!-- Stats -->
+        <div class="dashboard-grid">
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fas fa-store"></i></div>
+                <div class="stat-info">
+                    <h3>{{ stores|length }}</h3>
+                    <p>Stores</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fas fa-box"></i></div>
+                <div class="stat-info">
+                    <h3>{{ total_products }}</h3>
+                    <p>Total Products</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon purple"><i class="fas fa-shopping-cart"></i></div>
+                <div class="stat-info">
+                    <h3>{{ total_sales }}</h3>
+                    <p>Total Sales</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon orange"><i class="fas fa-dollar-sign"></i></div>
+                <div class="stat-info">
+                    <h3>--</h3>
+                    <p>Revenue</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stores List -->
+        {% if stores %}
+        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem;">Your Stores</h2>
+        <div class="dashboard-grid">
+            {% for store in stores %}
+            <div style="background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow); padding: 1.5rem; display: flex; align-items: center; gap: 1rem;">
+                <div style="width: 60px; height: 60px; border-radius: var(--radius); overflow: hidden; background: var(--gray-100); flex-shrink: 0;">
+                    <img src="{{ url_for('static', filename=store.logo) if store.logo else url_for('static', filename='uploads/stores/default_store.png') }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div style="flex: 1;">
+                    <h3 style="font-weight: 600; margin-bottom: 0.25rem;">{{ store.name }}</h3>
+                    <p style="font-size: 0.85rem; color: var(--gray-500);">{{ store.total_products }} products</p>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <a href="{{ url_for('seller.store_products', store_id=store.id) }}" class="btn btn-sm btn-primary"><i class="fas fa-box"></i> Products</a>
+                    <a href="{{ url_for('seller.edit_store', store_id=store.id) }}" class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Recent Orders -->
+        <h2 style="font-size: 1.25rem; font-weight: 700; margin: 2rem 0 1rem;">Recent Orders</h2>
+        {% if recent_orders %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Product</th>
+                        <th>Qty</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in recent_orders %}
+                    <tr>
+                        <td><a href="{{ url_for('orders.order_detail', order_id=item.order.id) }}" style="font-family: monospace; font-weight: 600;">{{ item.order.order_number }}</a></td>
+                        <td>{{ item.product_name }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>${{ "%.2f"|format(item.subtotal) }}</td>
+                        <td><span class="status-badge status-{{ item.order.status }}">{{ item.order.status|capitalize }}</span></td>
+                        <td>{{ item.order.created_at.strftime('%b %d') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div style="margin-top: 1rem;">
+            <a href="{{ url_for('seller.sales') }}" class="btn btn-outline">View All Sales <i class="fas fa-arrow-right"></i></a>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-shopping-bag"></i>
+            <h3>No Orders Yet</h3>
+            <p>Orders will appear here once customers start purchasing.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

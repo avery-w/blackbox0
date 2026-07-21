@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="section">
+    <div class="section-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 class="section-title"><i class="fas fa-shopping-cart"></i> Manage Orders</h1>
+                <p class="section-subtitle">View and update order statuses</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <a href="{{ url_for('admin.orders') }}" class="btn btn-sm btn-{{ 'primary' if not status_filter else 'secondary' }}">All</a>
+                <a href="{{ url_for('admin.orders', status='pending') }}" class="btn btn-sm btn-{{ 'primary' if status_filter == 'pending' else 'secondary' }}">Pending</a>
+                <a href="{{ url_for('admin.orders', status='processing') }}" class="btn btn-sm btn-{{ 'primary' if status_filter == 'processing' else 'secondary' }}">Processing</a>
+                <a href="{{ url_for('admin.orders', status='shipped') }}" class="btn btn-sm btn-{{ 'primary' if status_filter == 'shipped' else 'secondary' }}">Shipped</a>
+                <a href="{{ url_for('admin.orders', status='delivered') }}" class="btn btn-sm btn-{{ 'primary' if status_filter == 'delivered' else 'secondary' }}">Delivered</a>
+                <a href="{{ url_for('admin.orders', status='cancelled') }}" class="btn btn-sm btn-{{ 'primary' if status_filter == 'cancelled' else 'secondary' }}">Cancelled</a>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Customer</th>
+                        <th>Items</th>
+                        <th>Subtotal</th>
+                        <th>Total</th>
+                        <th>Payment</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders.items %}
+                    <tr>
+                        <td><a href="{{ url_for('orders.order_detail', order_id=order.id) }}" style="font-family: monospace; font-weight: 600;">{{ order.order_number }}</a></td>
+                        <td>{{ order.customer.username }}<br><span style="font-size: 0.8rem; color: var(--gray-500);">{{ order.customer.email }}</span></td>
+                        <td>{{ order.items|length }}</td>
+                        <td>${{ "%.2f"|format(order.subtotal) }}</td>
+                        <td style="font-weight: 700;">${{ "%.2f"|format(order.total) }}</td>
+                        <td style="text-transform: capitalize;">{{ order.payment_method }}<br><span class="status-badge status-{{ 'delivered' if order.payment_status == 'paid' else 'pending' }}" style="font-size: 0.75rem;">{{ order.payment_status }}</span></td>
+                        <td><span class="status-badge status-{{ order.status }}">{{ order.status|capitalize }}</span></td>
+                        <td>{{ order.created_at.strftime('%b %d, %Y') }}</td>
+                        <td>
+                            <form action="{{ url_for('admin.update_order_status', order_id=order.id) }}" method="POST" style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+                                <select name="status" class="form-control" style="width: auto; padding: 0.3rem; font-size: 0.8rem;">
+                                    <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Pending</option>
+                                    <option value="processing" {% if order.status == 'processing' %}selected{% endif %}>Processing</option>
+                                    <option value="shipped" {% if order.status == 'shipped' %}selected{% endif %}>Shipped</option>
+                                    <option value="delivered" {% if order.status == 'delivered' %}selected{% endif %}>Delivered</option>
+                                    <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-check"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" style="text-align: center; padding: 3rem;">
+                            <i class="fas fa-shopping-cart" style="font-size: 2rem; color: var(--gray-300); margin-bottom: 1rem; display: block;"></i>
+                            No orders found
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if orders.pages > 1 %}
+        <div class="pagination">
+            {% if orders.has_prev %}
+            <a href="{{ url_for('admin.orders', page=orders.prev_num, status=status_filter) }}" class="page-link"><i class="fas fa-chevron-left"></i></a>
+            {% endif %}
+            {% for page_num in orders.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    <a href="{{ url_for('admin.orders', page=page_num, status=status_filter) }}" class="page-link {% if page_num == orders.page %}active{% endif %}">{{ page_num }}</a>
+                {% endif %}
+            {% endfor %}
+            {% if orders.has_next %}
+            <a href="{{ url_for('admin.orders', page=orders.next_num, status=status_filter) }}" class="page-link"><i class="fas fa-chevron-right"></i></a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

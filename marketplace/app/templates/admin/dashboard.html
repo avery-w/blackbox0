@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="section">
+    <div class="section-container">
+        <h1 class="section-title"><i class="fas fa-shield-alt"></i> Admin Dashboard</h1>
+        <p class="section-subtitle" style="margin-bottom: 2rem;">System overview and management</p>
+
+        <div class="dashboard-grid">
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+                <div class="stat-info">
+                    <h3>{{ total_users }}</h3>
+                    <p>Total Users</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fas fa-store"></i></div>
+                <div class="stat-info">
+                    <h3>{{ total_stores }}</h3>
+                    <p>Total Stores</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon purple"><i class="fas fa-box"></i></div>
+                <div class="stat-info">
+                    <h3>{{ total_products }}</h3>
+                    <p>Total Products</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon orange"><i class="fas fa-shopping-cart"></i></div>
+                <div class="stat-info">
+                    <h3>{{ total_orders }}</h3>
+                    <p>Total Orders</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fas fa-dollar-sign"></i></div>
+                <div class="stat-info">
+                    <h3>${{ "%.2f"|format(total_revenue) }}</h3>
+                    <p>Total Revenue (Delivered)</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fas fa-clock"></i></div>
+                <div class="stat-info">
+                    <h3>{{ pending_orders }}</h3>
+                    <p>Pending Orders</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon purple"><i class="fas fa-shipping-fast"></i></div>
+                <div class="stat-info">
+                    <h3>{{ shipped_orders }}</h3>
+                    <p>Shipped</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-info">
+                    <h3>{{ delivered_orders }}</h3>
+                    <p>Delivered</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem;">
+            <a href="{{ url_for('admin.users') }}" class="btn btn-primary"><i class="fas fa-users"></i> Manage Users</a>
+            <a href="{{ url_for('admin.stores') }}" class="btn btn-primary"><i class="fas fa-store"></i> Manage Stores</a>
+            <a href="{{ url_for('admin.products') }}" class="btn btn-primary"><i class="fas fa-box"></i> Manage Products</a>
+            <a href="{{ url_for('admin.orders') }}" class="btn btn-primary"><i class="fas fa-shopping-cart"></i> Manage Orders</a>
+        </div>
+
+        <!-- Recent Orders -->
+        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem;">Recent Orders</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Customer</th>
+                        <th>Items</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in recent_orders %}
+                    <tr>
+                        <td><a href="{{ url_for('orders.order_detail', order_id=order.id) }}" style="font-family: monospace; font-weight: 600;">{{ order.order_number }}</a></td>
+                        <td>{{ order.customer.username }}</td>
+                        <td>{{ order.items|length }}</td>
+                        <td style="font-weight: 700;">${{ "%.2f"|format(order.total) }}</td>
+                        <td><span class="status-badge status-{{ order.status }}">{{ order.status|capitalize }}</span></td>
+                        <td>{{ order.created_at.strftime('%b %d, %Y') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Recent Users -->
+        <h2 style="font-size: 1.25rem; font-weight: 700; margin: 2rem 0 1rem;">Recent Users</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Type</th>
+                        <th>Joined</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in recent_users %}
+                    <tr>
+                        <td style="font-weight: 600;">{{ user.username }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            {% if user.is_admin %}
+                            <span class="status-badge status-processing">Admin</span>
+                            {% endif %}
+                            {% if user.is_seller %}
+                            <span class="status-badge status-delivered">Seller</span>
+                            {% endif %}
+                            {% if not user.is_admin and not user.is_seller %}
+                            <span class="status-badge status-pending">Buyer</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.created_at.strftime('%b %d, %Y') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

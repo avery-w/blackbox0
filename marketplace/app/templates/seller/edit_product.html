@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="section">
+    <div class="section-container">
+        <nav aria-label="breadcrumb" style="margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--gray-500);">
+            <a href="{{ url_for('seller.dashboard') }}">Dashboard</a> &raquo;
+            <a href="{{ url_for('seller.store_products', store_id=store.id) }}">{{ store.name }}</a> &raquo;
+            <span>Edit: {{ product.name }}</span>
+        </nav>
+        <div class="form-container" style="max-width: 700px;">
+            <h2 class="form-title"><i class="fas fa-edit"></i> Edit Product</h2>
+            <form method="POST" action="" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                    {{ form.name.label }}
+                    {{ form.name(class="form-control" + (" error" if form.name.errors else "")) }}
+                    {% if form.name.errors %}
+                        {% for error in form.name.errors %}
+                        <span class="form-error">{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.description.label }}
+                    {{ form.description(class="form-control", rows=5) }}
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form.price.label }}
+                        {{ form.price(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.compare_price.label }}
+                        {{ form.compare_price(class="form-control") }}
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form.quantity.label }}
+                        {{ form.quantity(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.sku.label }}
+                        {{ form.sku(class="form-control") }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    {{ form.category.label }}
+                    {{ form.category(class="form-control") }}
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form.image.label }}
+                        {{ form.image(class="form-control") }}
+                        {% if product.image %}
+                        <span class="form-text">Current: {{ product.image }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        {{ form.image2.label }}
+                        {{ form.image2(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.image3.label }}
+                        {{ form.image3(class="form-control") }}
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>
+                            {{ form.is_featured() }} {{ form.is_featured.label }}
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            {{ form.is_active() }} {{ form.is_active.label }}
+                        </label>
+                    </div>
+                </div>
+                {{ form.submit(class="btn btn-primary btn-block", value="Update Product") }}
+                <a href="{{ url_for('seller.store_products', store_id=store.id) }}" class="btn btn-secondary btn-block mt-1">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

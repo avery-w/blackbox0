@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="section">
+    <div class="section-container">
+        <h1 class="section-title"><i class="fas fa-chart-line"></i> Sales Overview</h1>
+        <p class="section-subtitle" style="margin-bottom: 2rem;">Track your orders and revenue</p>
+
+        <div class="dashboard-grid" style="margin-bottom: 2rem;">
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fas fa-dollar-sign"></i></div>
+                <div class="stat-info">
+                    <h3>${{ "%.2f"|format(total_revenue) }}</h3>
+                    <p>Total Revenue</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fas fa-shopping-bag"></i></div>
+                <div class="stat-info">
+                    <h3>{{ orders.total }}</h3>
+                    <p>Total Orders</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon purple"><i class="fas fa-store"></i></div>
+                <div class="stat-info">
+                    <h3>{{ stores|length }}</h3>
+                    <p>Active Stores</p>
+                </div>
+            </div>
+        </div>
+
+        {% if orders.items %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Product</th>
+                        <th>Customer</th>
+                        <th>Qty</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in orders.items %}
+                    <tr>
+                        <td><a href="{{ url_for('orders.order_detail', order_id=item.order.id) }}" style="font-family: monospace; font-weight: 600;">{{ item.order.order_number }}</a></td>
+                        <td>{{ item.product_name }}</td>
+                        <td>{{ item.order.customer.username }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td style="font-weight: 700;">${{ "%.2f"|format(item.subtotal) }}</td>
+                        <td><span class="status-badge status-{{ item.order.status }}">{{ item.order.status|capitalize }}</span></td>
+                        <td>{{ item.order.created_at.strftime('%b %d, %Y') }}</td>
+                        <td>
+                            <form action="{{ url_for('seller.update_order_status', order_item_id=item.id) }}" method="POST" style="display: flex; gap: 0.35rem;">
+                                <select name="status" class="form-control" style="width: auto; padding: 0.3rem; font-size: 0.8rem;">
+                                    <option value="processing" {% if item.order.status == 'processing' %}selected{% endif %}>Processing</option>
+                                    <option value="shipped" {% if item.order.status == 'shipped' %}selected{% endif %}>Shipped</option>
+                                    <option value="delivered" {% if item.order.status == 'delivered' %}selected{% endif %}>Delivered</option>
+                                    <option value="cancelled" {% if item.order.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-check"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if orders.pages > 1 %}
+        <div class="pagination">
+            {% if orders.has_prev %}
+            <a href="{{ url_for('seller.sales', page=orders.prev_num) }}" class="page-link"><i class="fas fa-chevron-left"></i></a>
+            {% endif %}
+            {% for page_num in orders.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    <a href="{{ url_for('seller.sales', page=page_num) }}" class="page-link {% if page_num == orders.page %}active{% endif %}">{{ page_num }}</a>
+                {% endif %}
+            {% endfor %}
+            {% if orders.has_next %}
+            <a href="{{ url_for('seller.sales', page=orders.next_num) }}" class="page-link"><i class="fas fa-chevron-right"></i></a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-shopping-bag"></i>
+            <h3>No Sales Yet</h3>
+            <p>Your sales will appear here once customers place orders.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

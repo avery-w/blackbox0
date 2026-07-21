@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MarketHub{% endblock %} | MarketHub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('main.home') }}" class="nav-brand">
+                <i class="fas fa-store"></i> MarketHub
+            </a>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation menu">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="nav-menu" id="navMenu">
+                <ul class="nav-links">
+                    <li><a href="{{ url_for('main.home') }}" class="nav-link"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="{{ url_for('products.browse') }}" class="nav-link"><i class="fas fa-search"></i> Browse</a></li>
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.is_seller %}
+                        <li><a href="{{ url_for('seller.dashboard') }}" class="nav-link"><i class="fas fa-store-alt"></i> Seller</a></li>
+                        {% endif %}
+                        <li><a href="{{ url_for('cart.view_cart') }}" class="nav-link cart-link">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="cart-badge" id="cartCount">0</span>
+                        </a></li>
+                        <li class="nav-dropdown">
+                            <a href="#" class="nav-link dropdown-toggle">
+                                <i class="fas fa-user"></i> {{ current_user.username }} <i class="fas fa-chevron-down"></i>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a href="{{ url_for('auth.profile') }}"><i class="fas fa-id-card"></i> My Profile</a></li>
+                                <li><a href="{{ url_for('orders.my_orders') }}"><i class="fas fa-box"></i> My Orders</a></li>
+                                {% if not current_user.is_seller %}
+                                <li><a href="#" onclick="becomeSeller(event)"><i class="fas fa-store"></i> Become a Seller</a></li>
+                                {% endif %}
+                                {% if current_user.is_admin %}
+                                <li class="dropdown-divider"></li>
+                                <li><a href="{{ url_for('admin.dashboard') }}"><i class="fas fa-shield-alt"></i> Admin Panel</a></li>
+                                {% endif %}
+                                <li class="dropdown-divider"></li>
+                                <li><a href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li><a href="{{ url_for('auth.login') }}" class="nav-link"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                        <li><a href="{{ url_for('auth.register') }}" class="nav-link btn-nav-primary"><i class="fas fa-user-plus"></i> Register</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div class="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade-in" role="alert">
+                    <span>{{ message }}</span>
+                    <button type="button" class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <h3><i class="fas fa-store"></i> MarketHub</h3>
+                    <p>Your one-stop marketplace for everything. Buy and sell with confidence.</p>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="{{ url_for('main.home') }}">Home</a></li>
+                        <li><a href="{{ url_for('products.browse') }}">Browse Products</a></li>
+                        <li><a href="{{ url_for('main.about') }}">About Us</a></li>
+                        <li><a href="{{ url_for('main.contact') }}">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Customer Service</h4>
+                    <ul>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Returns & Refunds</a></li>
+                        <li><a href="#">Shipping Info</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Sell With Us</h4>
+                    {% if current_user.is_authenticated and current_user.is_seller %}
+                        <a href="{{ url_for('seller.dashboard') }}" class="btn btn-accent">Seller Dashboard</a>
+                    {% else %}
+                        <a href="#" class="btn btn-accent" onclick="becomeSeller(event)">Start Selling</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 MarketHub. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Become Seller Form -->
+    <form id="becomeSellerForm" action="{{ url_for('auth.become_seller') }}" method="POST" style="display:none;">
+    </form>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>
+
